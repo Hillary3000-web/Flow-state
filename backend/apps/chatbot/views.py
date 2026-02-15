@@ -93,13 +93,8 @@ class ChatView(APIView):
 
         except Exception as e:
             error_str = str(e)
-            if '429' in error_str or 'quota' in error_str.lower():
-                friendly_error = 'I\'m a bit busy right now! Please try again in about 30 seconds. 🕐'
-            elif 'API key' in error_str or 'authentication' in error_str.lower():
-                friendly_error = 'AI service is not properly configured. Please check your API key.'
-            else:
-                friendly_error = 'Something went wrong with the AI service. Please try again.'
+            # DEBUG: show raw error temporarily
             return Response(
-                {'error': friendly_error},
+                {'error': f'DEBUG: {error_str[:300]}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
