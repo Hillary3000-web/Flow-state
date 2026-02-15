@@ -5,7 +5,7 @@ import useUIStore from '../../stores/uiStore';
 import useResponsive from '../../hooks/useResponsive';
 
 const navItems = [
-    { to: '/', icon: HiOutlineViewGrid, label: 'Dashboard' },
+    { to: '/dashboard', icon: HiOutlineViewGrid, label: 'Dashboard' },
     { to: '/tasks', icon: HiOutlineClipboardList, label: 'Tasks' },
     { to: '/goals', icon: HiOutlineFlag, label: 'Goals' },
     { to: '/schedule', icon: HiOutlineCalendar, label: 'Schedule' },
