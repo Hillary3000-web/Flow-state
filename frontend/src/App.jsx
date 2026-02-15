@@ -24,7 +24,7 @@ const queryClient = new QueryClient({
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/welcome" replace />;
+  return isAuthenticated ? children : <Navigate to="/" replace />;
 }
 
 function PublicRoute({ children }) {
@@ -37,12 +37,17 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          {/* Public Routes */}
           <Route path="/welcome" element={<PublicRoute><LandingPage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
+
+          {/* Root Path: Landing Page for public (redirects to dashboard if auth) */}
+          <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+
+          {/* Protected Dashboard Routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+            <Route index element={<Dashboard />} />
             <Route path="tasks" element={<Tasks />} />
             <Route path="goals" element={<Goals />} />
             <Route path="schedule" element={<Schedule />} />
@@ -50,7 +55,9 @@ export default function App() {
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-          <Route path="*" element={<Navigate to="/welcome" replace />} />
+
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <QuickCapture />
         <Toaster
