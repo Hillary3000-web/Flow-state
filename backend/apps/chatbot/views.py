@@ -46,22 +46,36 @@ class ChatView(APIView):
 
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(
-                'gemini-2.0-flash',
-                system_instruction=SYSTEM_PROMPT,
-            )
 
-            # Rebuild conversation history from frontend
-            history = request.data.get('history', [])
-            chat_history = []
-            for msg in history:
-                role = 'user' if msg.get('role') == 'user' else 'model'
-                chat_history.append({'role': role, 'parts': [msg.get('content', '')]})
+            # Try models in order — fallback if one hits quota
+            models_to_try = ['gemini-1.5-flash', 'gemini-2.0-flash']
+            last_error = None
 
-            chat = model.start_chat(history=chat_history)
-            response = chat.send_message(user_message)
+            for model_name in models_to_try:
+                try:
+                    model = genai.GenerativeModel(
+                        model_name,
+                        system_instruction=SYSTEM_PROMPT,
+                    )
 
-            return Response({'reply': response.text})
+                    # Rebuild conversation history from frontend
+                    history = request.data.get('history', [])
+                    chat_history = []
+                    for msg in history:
+                        role = 'user' if msg.get('role') == 'user' else 'model'
+                        chat_history.append({'role': role, 'parts': [msg.get('content', '')]})
+
+                    chat = model.start_chat(history=chat_history)
+                    response = chat.send_message(user_message)
+
+                    return Response({'reply': response.text})
+
+                except Exception as model_err:
+                    last_error = model_err
+                    continue  # Try next model
+
+            # All models failed
+            raise last_error
 
         except Exception as e:
             error_str = str(e)
