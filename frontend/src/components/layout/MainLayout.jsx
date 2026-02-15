@@ -7,12 +7,16 @@ import AIChatbot from '../chat/AIChatbot';
 import useUIStore from '../../stores/uiStore';
 import useAuthStore from '../../stores/authStore';
 import useResponsive from '../../hooks/useResponsive';
+import useWebSocket from '../../hooks/useWebSocket';
 
 export default function MainLayout() {
     const sidebarOpen = useUIStore((s) => s.sidebarOpen);
     const fetchUser = useAuthStore((s) => s.fetchUser);
     const location = useLocation();
     const { isMobile } = useResponsive();
+
+    // Initialize WebSocket for real-time notifications
+    useWebSocket();
 
     useEffect(() => { fetchUser(); }, [fetchUser]);
 
