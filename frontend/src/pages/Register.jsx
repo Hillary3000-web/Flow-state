@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useAuthStore from '../stores/authStore';
@@ -28,6 +28,20 @@ export default function Register() {
     const { register, isLoading } = useAuthStore();
     const [form, setForm] = useState({ email: '', username: '', full_name: '', password: '', password_confirm: '' });
     const [error, setError] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
+
+    // Feedback for cold starts
+    useEffect(() => {
+        let timer;
+        if (isLoading) {
+            timer = setTimeout(() => {
+                setLoadingMessage('Waking up the server... this may take up to a minute (Free Tier limits). Please wait!');
+            }, 4000);
+        } else {
+            setLoadingMessage('');
+        }
+        return () => clearTimeout(timer);
+    }, [isLoading]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -130,8 +144,26 @@ export default function Register() {
                                 transition: 'all 0.2s',
                             }}
                         >
-                            {isLoading ? 'Creating account...' : 'Create Account'}
+                            {isLoading ? (
+                                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <span style={{
+                                        width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)',
+                                        borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+                                    }} />
+                                    Creating account...
+                                </span>
+                            ) : 'Create Account'}
                         </motion.button>
+
+                        {loadingMessage && (
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                style={{ marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}
+                            >
+                                {loadingMessage}
+                            </motion.p>
+                        )}
                     </form>
 
                     <div style={{ height: '1px', background: 'var(--border)', margin: '24px 0 20px' }} />

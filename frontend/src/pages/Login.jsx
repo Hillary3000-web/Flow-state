@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useAuthStore from '../stores/authStore';
@@ -7,6 +7,20 @@ export default function Login() {
     const { login, isLoading } = useAuthStore();
     const [form, setForm] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
+
+    // Feedback for cold starts
+    useEffect(() => {
+        let timer;
+        if (isLoading) {
+            timer = setTimeout(() => {
+                setLoadingMessage('Waking up the server... this may take up to a minute (Free Tier limits). Please wait!');
+            }, 3000);
+        } else {
+            setLoadingMessage('');
+        }
+        return () => clearTimeout(timer);
+    }, [isLoading]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -161,6 +175,16 @@ export default function Login() {
                                 </span>
                             ) : 'Sign in'}
                         </motion.button>
+
+                        {loadingMessage && (
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                style={{ marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}
+                            >
+                                {loadingMessage}
+                            </motion.p>
+                        )}
                     </form>
 
                     {/* Divider */}

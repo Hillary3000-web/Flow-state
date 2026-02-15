@@ -11,15 +11,40 @@ export default function QuickCapture() {
     const { quickCaptureOpen, closeQuickCapture } = useUIStore();
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState('P3');
+    const [loading, setLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
     const inputRef = useRef(null);
 
     useEffect(() => { if (quickCaptureOpen) setTimeout(() => inputRef.current?.focus(), 50); }, [quickCaptureOpen]);
 
+    // Feedback for cold starts
+    useEffect(() => {
+        let timer;
+        if (loading) {
+            timer = setTimeout(() => {
+                setLoadingMessage('Waking up server... please wait (Free Tier)');
+            }, 3000);
+        } else {
+            setLoadingMessage('');
+        }
+        return () => clearTimeout(timer);
+    }, [loading]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!title.trim()) return;
-        try { await tasksAPI.quickCapture({ title, priority }); setTitle(''); setPriority('P3'); closeQuickCapture(); toast.success('Task captured! ⚡'); }
-        catch { toast.error('Failed'); }
+        if (!title.trim() || loading) return;
+        setLoading(true);
+        try {
+            await tasksAPI.quickCapture({ title, priority });
+            setTitle('');
+            setPriority('P3');
+            closeQuickCapture();
+            toast.success('Task captured! ⚡');
+        } catch {
+            toast.error('Failed to add task');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -27,7 +52,7 @@ export default function QuickCapture() {
             {quickCaptureOpen && (
                 <>
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        onClick={closeQuickCapture}
+                        onClick={loading ? null : closeQuickCapture}
                         style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
                     />
                     <motion.div
@@ -49,10 +74,11 @@ export default function QuickCapture() {
                                         placeholder="What needs to be done?"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Escape' && closeQuickCapture()}
-                                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 500, fontFamily: 'inherit' }}
+                                        onKeyDown={(e) => e.key === 'Escape' && !loading && closeQuickCapture()}
+                                        disabled={loading}
+                                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 500, fontFamily: 'inherit', opacity: loading ? 0.5 : 1 }}
                                     />
-                                    <button type="button" onClick={closeQuickCapture} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '6px' }}>
+                                    <button type="button" onClick={closeQuickCapture} disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', background: 'transparent', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: '6px' }}>
                                         <HiOutlineX style={{ width: '16px', height: '16px', color: 'var(--text-dim)' }} />
                                     </button>
                                 </div>
@@ -60,18 +86,26 @@ export default function QuickCapture() {
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'var(--bg-input)', borderTop: '1px solid var(--border)' }}>
                                     <div style={{ display: 'flex', gap: '6px' }}>
                                         {['P1', 'P2', 'P3', 'P4'].map((p) => (
-                                            <button key={p} type="button" onClick={() => setPriority(p)} style={{
+                                            <button key={p} type="button" onClick={() => setPriority(p)} disabled={loading} style={{
                                                 padding: '3px 10px', borderRadius: '50px', fontSize: '0.6875rem', fontWeight: 600,
-                                                border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+                                                border: 'none', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
                                                 background: P_COLORS[p].bg, color: P_COLORS[p].c,
-                                                opacity: priority === p ? 1 : 0.4,
+                                                opacity: (priority === p ? 1 : 0.4) * (loading ? 0.6 : 1),
                                                 transform: priority === p ? 'scale(1.08)' : 'scale(1)',
                                                 boxShadow: priority === p ? `0 0 0 2px ${P_COLORS[p].c}40` : 'none',
                                             }}>{p}</button>
                                         ))}
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                                        <kbd style={{ padding: '2px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)', borderRadius: '5px', fontSize: '0.6875rem', fontFamily: 'inherit' }}>Enter</kbd> save · <kbd style={{ padding: '2px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)', borderRadius: '5px', fontSize: '0.6875rem', fontFamily: 'inherit' }}>Esc</kbd> close
+                                        {loading ? (
+                                            <span style={{ color: 'var(--accent-light)', fontWeight: 500 }}>
+                                                {loadingMessage || 'Saving...'}
+                                            </span>
+                                        ) : (
+                                            <>
+                                                <kbd style={{ padding: '2px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)', borderRadius: '5px', fontSize: '0.6875rem', fontFamily: 'inherit' }}>Enter</kbd> save · <kbd style={{ padding: '2px 6px', background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)', borderRadius: '5px', fontSize: '0.6875rem', fontFamily: 'inherit' }}>Esc</kbd> close
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </form>
