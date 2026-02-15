@@ -85,9 +85,19 @@ if db_url.startswith('sqlite'):
     }
 else:
     import dj_database_url
+    from urllib.parse import urlparse, quote, urlunparse
+    # URL-encode the password to handle special characters
+    parsed = urlparse(db_url)
+    if parsed.password:
+        encoded_password = quote(parsed.password, safe='')
+        db_url = db_url.replace(
+            f':{parsed.password}@',
+            f':{encoded_password}@',
+        )
     DATABASES = {
         'default': dj_database_url.parse(db_url)
     }
+
 
 # ─── Auth ──────────────────────────────────────────────────
 AUTH_USER_MODEL = 'users.User'
