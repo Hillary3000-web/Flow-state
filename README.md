@@ -4,12 +4,15 @@
 
 **Execute with Consistency**
 
-A psychologically optimized task management application designed for students, developers, and founders who want to build consistent productivity habits.
+A psychologically optimized productivity platform designed for students, developers, and founders who want to build consistent habits and get things done.
 
 [![Django](https://img.shields.io/badge/Django-5.x-092E20?style=flat-square&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Groq](https://img.shields.io/badge/Groq-Llama%203.3-F55036?style=flat-square)](https://groq.com/)
 [![License](https://img.shields.io/badge/License-MIT-a78bfa?style=flat-square)](LICENSE)
+
+🔗 **[Live Demo](https://flow-state-liart.vercel.app/)** · 🐛 **[Report Bug](https://github.com/Hillary3000-web/Flow-state/issues)** · ✨ **[Request Feature](https://github.com/Hillary3000-web/Flow-state/issues)**
 
 </div>
 
@@ -17,12 +20,13 @@ A psychologically optimized task management application designed for students, d
 
 ## 📋 Overview
 
-FlowState is a full-stack productivity platform that goes beyond simple to-do lists. It combines **task management**, **focus sessions** (Pomodoro), **time-block scheduling**, **goal tracking**, and **analytics** into a single, cohesive experience — all wrapped in a premium dark-themed UI with glassmorphism and micro-animations.
+FlowState is a full-stack productivity platform that goes beyond simple to-do lists. It combines **task management**, **focus sessions** (Pomodoro), **time-block scheduling**, **goal tracking**, **analytics**, and an **AI productivity assistant** into a single, cohesive experience — all wrapped in a premium dark-themed UI with glassmorphism and micro-animations.
 
 ### ✨ Key Features
 
 | Feature | Description |
 |---------|-------------|
+| **🤖 AI Chatbot** | Groq-powered productivity assistant (Llama 3.3 70B) with contextual advice |
 | **📋 Smart Tasks** | Priority levels (P1–P4), energy tagging, due dates, quick capture (⌘K) |
 | **⏱️ Focus Mode** | Pomodoro timer with distraction logging and session analytics |
 | **📅 Time Blocking** | Visual daily schedule with deep work, meeting, break, and task blocks |
@@ -44,7 +48,8 @@ FlowState is a full-stack productivity platform that goes beyond simple to-do li
 | **SimpleJWT** | Token-based authentication |
 | **Django Channels** | WebSocket support for real-time notifications |
 | **Celery + Redis** | Async task processing |
-| **SQLite / PostgreSQL** | Database (SQLite for dev, Postgres for prod) |
+| **PostgreSQL (Supabase)** | Production database |
+| **Groq API** | AI chatbot (Llama 3.3 70B) |
 
 ### Frontend
 | Technology | Purpose |
@@ -57,6 +62,13 @@ FlowState is a full-stack productivity platform that goes beyond simple to-do li
 | **Recharts** | Data visualization |
 | **React Icons** | Icon library |
 | **React Hot Toast** | Toast notifications |
+
+### Deployment
+| Service | Purpose |
+|---------|---------|
+| **Render** | Backend hosting (Django API) |
+| **Vercel** | Frontend hosting (React SPA) |
+| **Supabase** | PostgreSQL database (persistent, free tier) |
 
 ---
 
@@ -88,11 +100,10 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Install dependencies
-pip install django djangorestframework djangorestframework-simplejwt \
-  django-cors-headers django-filter daphne channels python-dotenv
+pip install -r requirements.txt
 
-# Create .env file
-cp .env.example .env  # Or create manually (see Environment Variables)
+# Create .env file (see Environment Variables below)
+cp .env.example .env
 
 # Run migrations
 python manage.py migrate
@@ -129,7 +140,65 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 DATABASE_URL=sqlite:///db.sqlite3
 REDIS_URL=redis://localhost:6379/0
+GROQ_API_KEY=your-groq-api-key-here
 ```
+
+> **Getting a Groq API Key (free):** Sign up at [console.groq.com](https://console.groq.com) → API Keys → Create API Key
+
+---
+
+## 🌐 Deployment
+
+### Backend (Render)
+
+1. Push your code to GitHub
+2. Create a new **Web Service** on [Render](https://render.com)
+3. Connect your GitHub repo, set root directory to `backend/`
+4. Set build command: `./build.sh`
+5. Set start command: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
+6. Add environment variables:
+
+| Key | Value |
+|-----|-------|
+| `SECRET_KEY` | Your Django secret key |
+| `DEBUG` | `False` |
+| `ALLOWED_HOSTS` | `flow-state-api.onrender.com` |
+| `CORS_ALLOWED_ORIGINS` | `https://flow-state-liart.vercel.app` |
+| `DATABASE_URL` | Your Supabase PostgreSQL connection string |
+| `GROQ_API_KEY` | Your Groq API key |
+
+### Frontend (Vercel)
+
+1. Import the repo on [Vercel](https://vercel.com)
+2. Set root directory to `frontend/`
+3. Add environment variable: `VITE_API_URL` = `https://flow-state-api.onrender.com`
+
+### Database (Supabase)
+
+1. Create a free project at [supabase.com](https://supabase.com)
+2. Go to **Connect** → copy the **Transaction Pooler URI**
+3. Replace `[YOUR-PASSWORD]` with your database password
+4. Set as `DATABASE_URL` on Render
+
+---
+
+## 🤖 AI Chatbot
+
+FlowState includes a built-in **AI productivity assistant** powered by [Groq](https://groq.com) (Llama 3.3 70B model).
+
+**Features:**
+- 💬 Floating chat widget accessible from every page
+- 🧠 Contextual productivity advice (task planning, habits, focus, goals)
+- 📝 Conversation history maintained per session
+- ⚡ Fast responses via Groq's inference engine
+- 🔒 Secure — API key never exposed to the client (server-side proxy)
+
+**Architecture:**
+```
+Frontend (React) → Django API (/api/chatbot/) → Groq API → Response
+```
+
+The chatbot endpoint is JWT-protected, so only authenticated users can interact with the AI.
 
 ---
 
@@ -145,15 +214,18 @@ Flow-state/
 │   │   ├── focus/          # Pomodoro sessions, distraction logging
 │   │   ├── habits/         # Habit tracking & streaks
 │   │   ├── analytics/      # Trends, burn-down, time allocation
+│   │   ├── chatbot/        # AI chatbot (Groq/Llama 3.3 integration)
 │   │   └── notifications/  # WebSocket real-time alerts
 │   ├── common/             # Shared utilities, pagination
 │   ├── config/             # Django settings, URL routing, ASGI
+│   ├── build.sh            # Render build script
 │   └── manage.py
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── api/            # Axios API layer
 │   │   ├── components/
+│   │   │   ├── chat/       # AIChatbot floating widget
 │   │   │   ├── layout/     # Sidebar, Header, MainLayout
 │   │   │   └── tasks/      # QuickCapture modal
 │   │   ├── hooks/          # useResponsive custom hook
@@ -165,8 +237,10 @@ Flow-state/
 │   │   └── main.jsx        # Entry point
 │   ├── index.html
 │   ├── package.json
+│   ├── vercel.json         # Vercel SPA routing config
 │   └── vite.config.js
 │
+├── README.md
 └── .gitignore
 ```
 
@@ -199,6 +273,11 @@ Flow-state/
 | `POST` | `/api/focus/sessions/` | Start session |
 | `PATCH` | `/api/focus/sessions/{id}/` | End session |
 | `GET` | `/api/focus/stats/` | Focus statistics |
+
+### AI Chatbot
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/chatbot/` | Send message to AI assistant |
 
 ### Analytics
 | Method | Endpoint | Description |
