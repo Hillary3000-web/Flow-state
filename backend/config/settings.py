@@ -100,6 +100,9 @@ else:
                 'PASSWORD': match.group(2),
                 'HOST': match.group(3),
                 'PORT': match.group(4),
+                'OPTIONS': {
+                    'sslmode': 'require',
+                },
             }
         }
     else:
