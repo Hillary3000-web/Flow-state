@@ -1,11 +1,13 @@
 """
 FlowState AI Chatbot — Gemini-powered productivity assistant.
+Uses the new google-genai SDK (replacement for deprecated google-generativeai).
 """
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 
 SYSTEM_PROMPT = (
@@ -45,7 +47,27 @@ class ChatView(APIView):
             )
 
         try:
-            genai.configure(api_key=api_key)
+            client = genai.Client(api_key=api_key)
+
+            # Build conversation contents from history
+            contents = []
+            history = request.data.get('history', [])
+            for msg in history:
+                role = 'user' if msg.get('role') == 'user' else 'model'
+                contents.append(
+                    types.Content(
+                        role=role,
+                        parts=[types.Part.from_text(text=msg.get('content', ''))],
+                    )
+                )
+
+            # Add the current user message
+            contents.append(
+                types.Content(
+                    role='user',
+                    parts=[types.Part.from_text(text=user_message)],
+                )
+            )
 
             # Try models in order — fallback if one hits quota
             models_to_try = ['gemini-1.5-flash', 'gemini-2.0-flash']
@@ -53,26 +75,18 @@ class ChatView(APIView):
 
             for model_name in models_to_try:
                 try:
-                    model = genai.GenerativeModel(
-                        model_name,
-                        system_instruction=SYSTEM_PROMPT,
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=contents,
+                        config=types.GenerateContentConfig(
+                            system_instruction=SYSTEM_PROMPT,
+                        ),
                     )
-
-                    # Rebuild conversation history from frontend
-                    history = request.data.get('history', [])
-                    chat_history = []
-                    for msg in history:
-                        role = 'user' if msg.get('role') == 'user' else 'model'
-                        chat_history.append({'role': role, 'parts': [msg.get('content', '')]})
-
-                    chat = model.start_chat(history=chat_history)
-                    response = chat.send_message(user_message)
-
                     return Response({'reply': response.text})
 
                 except Exception as model_err:
                     last_error = model_err
-                    continue  # Try next model
+                    continue
 
             # All models failed
             raise last_error
