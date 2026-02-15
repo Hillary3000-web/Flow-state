@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'apps.habits',
     'apps.analytics',
     'apps.notifications',
+    'apps.chatbot',
 ]
 
 # ─── Middleware ─────────────────────────────────────────────
@@ -165,3 +166,6 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ─── Gemini AI ─────────────────────────────────────
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')

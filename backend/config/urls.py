@@ -14,4 +14,5 @@ urlpatterns = [
     path('api/habits/', include('apps.habits.urls')),
     path('api/analytics/', include('apps.analytics.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
+    path('api/chatbot/', include('apps.chatbot.urls')),
 ]

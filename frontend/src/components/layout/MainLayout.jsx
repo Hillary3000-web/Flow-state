@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import AIChatbot from '../chat/AIChatbot';
 import useUIStore from '../../stores/uiStore';
 import useAuthStore from '../../stores/authStore';
 import useResponsive from '../../hooks/useResponsive';
@@ -58,6 +59,8 @@ export default function MainLayout() {
                     </div>
                 </main>
             </div>
+            <AIChatbot />
         </div>
     );
 }
+
