@@ -84,19 +84,29 @@ if db_url.startswith('sqlite'):
         }
     }
 else:
-    import dj_database_url
-    from urllib.parse import urlparse, quote, urlunparse
-    # URL-encode the password to handle special characters
-    parsed = urlparse(db_url)
-    if parsed.password:
-        encoded_password = quote(parsed.password, safe='')
-        db_url = db_url.replace(
-            f':{parsed.password}@',
-            f':{encoded_password}@',
-        )
-    DATABASES = {
-        'default': dj_database_url.parse(db_url)
-    }
+    import re
+    # Parse PostgreSQL URL manually to handle special characters in passwords
+    # Format: postgresql://USER:PASSWORD@HOST:PORT/DBNAME
+    match = re.match(
+        r'postgres(?:ql)?://([^:]+):(.+)@([^:]+):(\d+)/(.+?)(?:\?.*)?$',
+        db_url,
+    )
+    if match:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': match.group(5),
+                'USER': match.group(1),
+                'PASSWORD': match.group(2),
+                'HOST': match.group(3),
+                'PORT': match.group(4),
+            }
+        }
+    else:
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.parse(db_url)
+        }
 
 
 # ─── Auth ──────────────────────────────────────────────────
