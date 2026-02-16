@@ -37,6 +37,9 @@ client.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+    if (error.code === 'ERR_NETWORK') {
+      return Promise.reject({ response: { data: { detail: 'Unable to connect to server. Check your network or if the server is running.' } } });
+    }
     return Promise.reject(error);
   }
 );

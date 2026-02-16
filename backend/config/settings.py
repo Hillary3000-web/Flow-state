@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,flow-state-api.onrender.com').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,flow-state-api.onrender.com,10.230.84.195').split(',')
 
 # ─── Installed Apps ────────────────────────────────────────
 INSTALLED_APPS = [
@@ -152,7 +152,7 @@ SIMPLE_JWT = {
 # ─── CORS ──────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173,https://flow-state-liart.vercel.app'
+    'http://localhost:5173,http://127.0.0.1:5173,https://flow-state-liart.vercel.app,http://10.230.84.195:5173'
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
 

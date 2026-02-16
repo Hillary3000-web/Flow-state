@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useAuthStore from '../stores/authStore';
+import useResponsive from '../hooks/useResponsive';
 
 const inputStyle = {
     width: '100%',
@@ -26,6 +27,7 @@ const labelStyle = {
 
 export default function Register() {
     const { register, isLoading } = useAuthStore();
+    const { isMobile } = useResponsive();
     const [form, setForm] = useState({ email: '', username: '', full_name: '', password: '', password_confirm: '' });
     const [error, setError] = useState('');
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -69,7 +71,9 @@ export default function Register() {
             minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'var(--bg-primary)', position: 'relative', overflow: 'hidden', padding: '24px',
         }}>
-            <div style={{ position: 'absolute', top: '-200px', left: '-100px', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+            {!isMobile && (
+                <div style={{ position: 'absolute', top: '-200px', left: '-100px', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+            )}
 
             <motion.div
                 initial={{ opacity: 0, y: 24 }}

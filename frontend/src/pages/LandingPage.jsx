@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import SEO from '../components/SEO';
 import {
     FiCheckCircle, FiTarget, FiClock, FiBarChart2,
     FiMessageSquare, FiZap, FiArrowRight
@@ -99,6 +100,11 @@ const features = [
 export default function LandingPage() {
     return (
         <div className="landing-page">
+            <SEO
+                title="Execute with Consistency"
+                description="FlowState is the all-in-one productivity platform for students and founders. Combine tasks, habits, and focus timers to build a better workflow."
+                keywords="productivity, tasks, focus timer, pomodoro, habits, flow state, daily planner"
+            />
             <StarField />
 
             {/* ─── Navbar ─── */}
@@ -170,6 +176,17 @@ export default function LandingPage() {
                         <div className="landing-stat">
                             <span className="landing-stat-number">100%</span>
                             <span className="landing-stat-label">Free</span>
+                        </div>
+                    </div>
+
+                    {/* Trust Signals */}
+                    <div style={{ marginTop: '48px', opacity: 0.7 }}>
+                        <p style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#71717a', marginBottom: '16px' }}>Trusted by productivity enthusiasts at</p>
+                        <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', alignItems: 'center', filter: 'grayscale(100%) opacity(0.6)' }}>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>ACME</span>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Globex</span>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Soylent</span>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Initech</span>
                         </div>
                     </div>
                 </motion.div>

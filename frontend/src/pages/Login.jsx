@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useAuthStore from '../stores/authStore';
+import useResponsive from '../hooks/useResponsive';
 
 export default function Login() {
     const { login, isLoading } = useAuthStore();
+    const { isMobile } = useResponsive();
     const [form, setForm] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -54,16 +56,21 @@ export default function Login() {
             padding: '24px',
         }}>
             {/* Ambient glow */}
-            <div style={{
-                position: 'absolute', top: '-200px', left: '-100px', width: '500px', height: '500px',
-                background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)',
-                borderRadius: '50%', pointerEvents: 'none',
-            }} />
-            <div style={{
-                position: 'absolute', bottom: '-200px', right: '-100px', width: '400px', height: '400px',
-                background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)',
-                borderRadius: '50%', pointerEvents: 'none',
-            }} />
+            {/* Ambient glow - Desktop only */}
+            {!isMobile && (
+                <>
+                    <div style={{
+                        position: 'absolute', top: '-200px', left: '-100px', width: '500px', height: '500px',
+                        background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)',
+                        borderRadius: '50%', pointerEvents: 'none',
+                    }} />
+                    <div style={{
+                        position: 'absolute', bottom: '-200px', right: '-100px', width: '400px', height: '400px',
+                        background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)',
+                        borderRadius: '50%', pointerEvents: 'none',
+                    }} />
+                </>
+            )}
 
             <motion.div
                 initial={{ opacity: 0, y: 24 }}

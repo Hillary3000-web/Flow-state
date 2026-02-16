@@ -23,7 +23,19 @@ export default function Tasks() {
     const load = () => { tasksAPI.list(filter !== 'all' ? { status: filter } : {}).then((r) => setTasks(r.data.results || r.data)).catch(() => { }); };
     useEffect(() => { load(); }, [filter]);
 
-    const create = async (e) => { e.preventDefault(); try { await tasksAPI.create(newTask); setNewTask({ title: '', priority: 'P3', energy_level: 'medium', due_date: '' }); setShowForm(false); load(); toast.success('Task created!'); } catch { toast.error('Failed'); } };
+    const create = async (e) => {
+        e.preventDefault();
+        try {
+            const payload = { ...newTask, due_date: newTask.due_date || null };
+            await tasksAPI.create(payload);
+            setNewTask({ title: '', priority: 'P3', energy_level: 'medium', due_date: '' });
+            setShowForm(false);
+            load();
+            toast.success('Task created!');
+        } catch {
+            toast.error('Failed');
+        }
+    };
     const complete = async (id) => { try { await tasksAPI.complete(id); load(); toast.success('Done! 🎉'); } catch { } };
     const del = async (id) => { try { await tasksAPI.delete(id); load(); toast.success('Deleted'); } catch { } };
 
