@@ -48,14 +48,15 @@ export default function App() {
             <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
 
             {/* Protected Dashboard Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-              <Route index element={<Dashboard />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="goals" element={<Goals />} />
-              <Route path="schedule" element={<Schedule />} />
-              <Route path="focus" element={<Focus />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="settings" element={<Settings />} />
+            {/* Protected Dashboard Routes */}
+            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/goals" element={<Goals />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/focus" element={<Focus />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
 
             {/* Catch-all */}
