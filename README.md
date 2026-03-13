@@ -46,7 +46,7 @@ FlowState is a full-stack productivity platform that goes beyond simple to-do li
 | **Django 5** | Web framework |
 | **Django REST Framework** | RESTful API |
 | **SimpleJWT** | Token-based authentication |
-| **Django Channels** | WebSocket support for real-time notifications |
+| **Django Channels + Redis** | WebSocket support for real-time notifications |
 | **Celery + Redis** | Async task processing |
 | **PostgreSQL (Supabase)** | Production database |
 | **Groq API** | AI chatbot (Llama 3.3 70B) |
@@ -98,6 +98,7 @@ python -m venv venv
 venv\Scripts\activate
 # macOS/Linux
 source venv/bin/activate
+# Note: On Windows, daphne/Twisted may require Visual C++ Build Tools
 
 # Install dependencies
 pip install -r requirements.txt
@@ -160,12 +161,15 @@ GROQ_API_KEY=your-groq-api-key-here
 
 | Key | Value |
 |-----|-------|
-| `SECRET_KEY` | Your Django secret key |
+| `SECRET_KEY` | Your Django secret key (required — app will crash without it) |
 | `DEBUG` | `False` |
 | `ALLOWED_HOSTS` | `flow-state-api.onrender.com` |
 | `CORS_ALLOWED_ORIGINS` | `https://flow-state-liart.vercel.app` |
 | `DATABASE_URL` | Your Supabase PostgreSQL connection string |
+| `REDIS_URL` | Redis connection URL (e.g. from [Upstash](https://upstash.com)) |
 | `GROQ_API_KEY` | Your Groq API key |
+
+> **Note:** `REDIS_URL` is required for the WebSocket channel layer (real-time notifications). You can get a free Redis instance from [Upstash](https://upstash.com).
 
 ### Frontend (Vercel)
 
@@ -215,20 +219,25 @@ Flow-state/
 │   │   ├── habits/         # Habit tracking & streaks
 │   │   ├── analytics/      # Trends, burn-down, time allocation
 │   │   ├── chatbot/        # AI chatbot (Groq/Llama 3.3 integration)
-│   │   └── notifications/  # WebSocket real-time alerts
+│   │   └── notifications/  # WebSocket real-time alerts (Redis channel layer)
 │   ├── common/             # Shared utilities, pagination
 │   ├── config/             # Django settings, URL routing, ASGI
 │   ├── build.sh            # Render build script
+│   ├── requirements.txt    # Python dependencies
 │   └── manage.py
 │
 ├── frontend/
+│   ├── public/
+│   │   ├── og-image.png    # Social media preview image
+│   │   ├── robots.txt      # Search engine crawl rules
+│   │   └── sitemap.xml     # Site map for SEO
 │   ├── src/
 │   │   ├── api/            # Axios API layer
 │   │   ├── components/
 │   │   │   ├── chat/       # AIChatbot floating widget
 │   │   │   ├── layout/     # Sidebar, Header, MainLayout
 │   │   │   └── tasks/      # QuickCapture modal
-│   │   ├── hooks/          # useResponsive custom hook
+│   │   ├── hooks/          # useResponsive, useWebSocket
 │   │   ├── pages/          # Dashboard, Tasks, Goals, Schedule,
 │   │   │                   # Focus, Analytics, Settings, Login, Register
 │   │   ├── stores/         # Zustand stores (auth, UI)
@@ -240,6 +249,7 @@ Flow-state/
 │   ├── vercel.json         # Vercel SPA routing config
 │   └── vite.config.js
 │
+├── .gitattributes          # Line ending rules (LF for shell scripts)
 ├── README.md
 └── .gitignore
 ```
@@ -324,6 +334,17 @@ FlowState uses a custom design system built with CSS custom properties:
 ## 📄 License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔒 Security
+
+- **SECRET_KEY**: Required via environment variable — app crashes in production without it (no insecure fallback)
+- **CORS**: Restricted to the production frontend domain only
+- **ALLOWED_HOSTS**: Strictly limited to the Render domain
+- **WebSocket Auth**: JWT token required for WebSocket connections
+- **API Auth**: All endpoints (except registration/login) require JWT authentication
+- **robots.txt**: Blocks crawlers from authenticated routes (`/dashboard`, `/tasks`, etc.)
 
 ---
 
