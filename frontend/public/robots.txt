@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /tasks
+Disallow: /goals
+Disallow: /schedule
+Disallow: /focus
+Disallow: /analytics
+Disallow: /settings
 
 Sitemap: https://flow-state-liart.vercel.app/sitemap.xml

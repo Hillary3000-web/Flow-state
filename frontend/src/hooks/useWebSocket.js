@@ -7,7 +7,8 @@ const WS_URL = import.meta.env.VITE_API_URL
   : 'ws://localhost:8000';
 
 export default function useWebSocket() {
-  const { accessToken, isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accessToken = localStorage.getItem('access_token');
   const socketRef = useRef(null);
 
   useEffect(() => {

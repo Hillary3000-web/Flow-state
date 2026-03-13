@@ -10,13 +10,18 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes'):
+        SECRET_KEY = 'django-insecure-dev-only-key-not-for-production'
+    else:
+        raise ValueError('SECRET_KEY environment variable is required in production!')
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS')
 if ALLOWED_HOSTS:
     ALLOWED_HOSTS = ALLOWED_HOSTS.split(',')
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'flow-state-api.onrender.com', '.onrender.com', '10.230.84.195']
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'flow-state-api.onrender.com', '.onrender.com']
 
 # ─── Installed Apps ────────────────────────────────────────
 INSTALLED_APPS = [
@@ -156,14 +161,17 @@ SIMPLE_JWT = {
 # ─── CORS ──────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173,https://flow-state-liart.vercel.app,http://10.230.84.195:5173'
+    'http://localhost:5173,http://127.0.0.1:5173,https://flow-state-liart.vercel.app'
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # ─── Channels ─────────────────────────────────────────────
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
+        },
     }
 }
 
@@ -187,7 +195,11 @@ USE_TZ = True
 # ─── Static files ─────────────────────────────────────────
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'

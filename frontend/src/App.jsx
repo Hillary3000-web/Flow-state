@@ -48,7 +48,6 @@ export default function App() {
             <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
 
             {/* Protected Dashboard Routes */}
-            {/* Protected Dashboard Routes */}
             <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/tasks" element={<Tasks />} />
