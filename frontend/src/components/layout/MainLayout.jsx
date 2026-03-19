@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom';
+import { useOutlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './Sidebar';
@@ -13,6 +13,7 @@ export default function MainLayout() {
     const sidebarOpen = useUIStore((s) => s.sidebarOpen);
     const fetchUser = useAuthStore((s) => s.fetchUser);
     const location = useLocation();
+    const outlet = useOutlet();
     const { isMobile } = useResponsive();
 
     // Initialize WebSocket for real-time notifications
@@ -57,7 +58,7 @@ export default function MainLayout() {
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                <Outlet />
+                                {outlet}
                             </motion.div>
                         </AnimatePresence>
                     </div>
