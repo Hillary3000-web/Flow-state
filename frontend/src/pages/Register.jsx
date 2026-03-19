@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useAuthStore from '../stores/authStore';
 import useResponsive from '../hooks/useResponsive';
@@ -28,6 +28,7 @@ const labelStyle = {
 export default function Register() {
     const { register, isLoading } = useAuthStore();
     const { isMobile } = useResponsive();
+    const navigate = useNavigate();
     const [form, setForm] = useState({ email: '', username: '', full_name: '', password: '', password_confirm: '' });
     const [error, setError] = useState('');
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -50,7 +51,9 @@ export default function Register() {
         setError('');
         if (form.password !== form.password_confirm) { setError('Passwords do not match'); return; }
         const result = await register(form);
-        if (!result.success) {
+        if (result.success) {
+            navigate('/dashboard', { replace: true });
+        } else {
             setError(result.error ? Object.values(result.error).flat().join(', ') : 'Registration failed');
         }
     };

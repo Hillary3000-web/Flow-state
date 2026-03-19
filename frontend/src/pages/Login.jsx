@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useAuthStore from '../stores/authStore';
 import useResponsive from '../hooks/useResponsive';
@@ -7,6 +7,7 @@ import useResponsive from '../hooks/useResponsive';
 export default function Login() {
     const { login, isLoading } = useAuthStore();
     const { isMobile } = useResponsive();
+    const navigate = useNavigate();
     const [form, setForm] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -28,7 +29,11 @@ export default function Login() {
         e.preventDefault();
         setError('');
         const result = await login(form);
-        if (!result.success) setError(result.error?.detail || 'Invalid email or password');
+        if (result.success) {
+            navigate('/dashboard', { replace: true });
+        } else {
+            setError(result.error?.detail || 'Invalid email or password');
+        }
     };
 
     const inputStyle = {

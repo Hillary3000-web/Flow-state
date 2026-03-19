@@ -25,12 +25,17 @@ const queryClient = new QueryClient({
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 function PublicRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+}
+
+function CatchAllRedirect() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />;
 }
 
 export default function App() {
@@ -58,8 +63,8 @@ export default function App() {
               <Route path="/settings" element={<Settings />} />
             </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Catch-all: redirect based on auth state */}
+            <Route path="*" element={<CatchAllRedirect />} />
           </Routes>
           <QuickCapture />
           <Toaster

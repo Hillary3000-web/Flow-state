@@ -10,6 +10,8 @@ export default function useWebSocket() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const accessToken = localStorage.getItem('access_token');
   const socketRef = useRef(null);
+  const reconnectAttempts = useRef(0);
+  const MAX_RECONNECT_ATTEMPTS = 5;
 
   useEffect(() => {
     if (!isAuthenticated || !accessToken) {
@@ -17,10 +19,16 @@ export default function useWebSocket() {
         socketRef.current.close();
         socketRef.current = null;
       }
+      reconnectAttempts.current = 0;
       return;
     }
 
     const connect = () => {
+      if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+        console.log('UseWebSocket: Max reconnect attempts reached, stopping');
+        return;
+      }
+
       // Append token to query string for middleware auth
       const url = `${WS_URL}/ws/notifications/?token=${accessToken}`;
       
@@ -29,6 +37,7 @@ export default function useWebSocket() {
 
       ws.onopen = () => {
         console.log('UseWebSocket: Connected');
+        reconnectAttempts.current = 0; // Reset on successful connection
       };
 
       ws.onmessage = (event) => {
@@ -52,10 +61,12 @@ export default function useWebSocket() {
 
       ws.onclose = () => {
         console.log('UseWebSocket: Disconnected');
-        // Simple reconnect logic
+        reconnectAttempts.current += 1;
+        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+        const delay = Math.min(2000 * Math.pow(2, reconnectAttempts.current - 1), 32000);
         setTimeout(() => {
-          if (isAuthenticated) connect();
-        }, 5000);
+          if (isAuthenticated && reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) connect();
+        }, delay);
       };
 
       ws.onerror = (error) => {

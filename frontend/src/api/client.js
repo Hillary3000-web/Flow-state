@@ -34,7 +34,9 @@ client.interceptors.response.use(
       } catch {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        // Import dynamically to avoid circular dependency
+        const { default: useAuthStore } = await import('../stores/authStore');
+        useAuthStore.setState({ user: null, isAuthenticated: false });
       }
     }
     if (error.code === 'ERR_NETWORK') {

@@ -38,8 +38,14 @@ const useAuthStore = create((set) => ({
     try {
       const { data } = await authAPI.getMe();
       set({ user: data });
-    } catch {
-      set({ user: null, isAuthenticated: false });
+    } catch (error) {
+      // Only clear auth on 401 (invalid/expired token), not on network errors
+      if (error.response?.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        set({ user: null, isAuthenticated: false });
+      }
+      // On network errors (backend cold start), keep auth state intact
     }
   },
 
