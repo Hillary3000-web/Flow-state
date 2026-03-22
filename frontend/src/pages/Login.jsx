@@ -211,7 +211,7 @@ export default function Login() {
                 </div>
 
                 <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '32px' }}>
-                    Designed for students, developers & founders
+                    Developed and designed by Hillary Chukwuma Prince
                 </p>
             </motion.div>
 
