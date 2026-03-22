@@ -17,7 +17,7 @@ export default function Login() {
         let timer;
         if (isLoading) {
             timer = setTimeout(() => {
-                setLoadingMessage('Waking up the server... this may take up to a minute (Free Tier limits). Please wait!');
+                setLoadingMessage('Waking up the server... this may take up to a minute. Please wait!');
             }, 3000);
         } else {
             setLoadingMessage('');
