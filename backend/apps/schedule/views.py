@@ -32,11 +32,12 @@ class TimeBlockViewSet(viewsets.ModelViewSet):
         """Drag-and-drop reorder."""
         items = request.data.get('items', [])
         for item in items:
-            TimeBlock.objects.filter(id=item['id'], user=request.user).update(
-                sort_order=item['sort_order'],
-                start_time=item.get('start_time'),
-                end_time=item.get('end_time'),
-            )
+            updates = {'sort_order': item['sort_order']}
+            if item.get('start_time') is not None:
+                updates['start_time'] = item['start_time']
+            if item.get('end_time') is not None:
+                updates['end_time'] = item['end_time']
+            TimeBlock.objects.filter(id=item['id'], user=request.user).update(**updates)
         return Response({'detail': 'Reordered.'})
 
 

@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 
@@ -28,11 +29,11 @@ class HabitCheckinView(APIView):
 
     def post(self, request, task_id):
         today = timezone.now().date()
-        task = Task.objects.get(id=task_id, user=request.user, is_recurring=True)
+        task = get_object_or_404(Task, id=task_id, user=request.user, is_recurring=True)
 
         streak, created = HabitStreak.objects.get_or_create(
             user=request.user, task=task, streak_date=today,
-            defaults={'completed_today': True, 'current_streak': 1}
+            defaults={'completed_today': True, 'current_streak': 1, 'longest_streak': 1}
         )
 
         if not created and not streak.completed_today:

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from './stores/authStore';
+import ErrorBoundary from './components/ErrorBoundary';
 import MainLayout from './components/layout/MainLayout';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
@@ -10,6 +11,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Goals from './pages/Goals';
+import Projects from './pages/Projects';
+import Habits from './pages/Habits';
 import Schedule from './pages/Schedule';
 import Focus from './pages/Focus';
 import Analytics from './pages/Analytics';
@@ -18,68 +21,69 @@ import QuickCapture from './components/tasks/QuickCapture';
 import './index.css';
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: 30000, retry: 1 },
-  },
+    defaultOptions: {
+        queries: { staleTime: 30000, retry: 1 },
+    },
 });
 
 function ProtectedRoute({ children }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 function PublicRoute({ children }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+    return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 }
 
 function CatchAllRedirect() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />;
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+    return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />;
 }
 
 export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/welcome" element={<PublicRoute><LandingPage /></PublicRoute>} />
-            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+    return (
+        <ErrorBoundary>
+            <QueryClientProvider client={queryClient}>
+                <HelmetProvider>
+                    <BrowserRouter>
+                        <Routes>
+                            {/* Public routes */}
+                            <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+                            <Route path="/welcome" element={<PublicRoute><LandingPage /></PublicRoute>} />
+                            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-            {/* Root Path: Landing Page for public (redirects to dashboard if auth) */}
-            <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+                            {/* Protected routes */}
+                            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                                <Route path="/dashboard" element={<Dashboard />} />
+                                <Route path="/tasks" element={<Tasks />} />
+                                <Route path="/goals" element={<Goals />} />
+                                <Route path="/projects" element={<Projects />} />
+                                <Route path="/habits" element={<Habits />} />
+                                <Route path="/schedule" element={<Schedule />} />
+                                <Route path="/focus" element={<Focus />} />
+                                <Route path="/analytics" element={<Analytics />} />
+                                <Route path="/settings" element={<Settings />} />
+                            </Route>
 
-            {/* Protected Dashboard Routes */}
-            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/goals" element={<Goals />} />
-              <Route path="/schedule" element={<Schedule />} />
-              <Route path="/focus" element={<Focus />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/settings" element={<Settings />} />
-            </Route>
-
-            {/* Catch-all: redirect based on auth state */}
-            <Route path="*" element={<CatchAllRedirect />} />
-          </Routes>
-          <QuickCapture />
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              style: {
-                background: 'var(--bg-card)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)',
-              },
-            }}
-          />
-        </BrowserRouter>
-      </HelmetProvider>
-    </QueryClientProvider>
-  );
+                            <Route path="*" element={<CatchAllRedirect />} />
+                        </Routes>
+                        <QuickCapture />
+                        <Toaster
+                            position="bottom-right"
+                            toastOptions={{
+                                style: {
+                                    background: 'var(--bg-card)',
+                                    color: 'var(--text-primary)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: 'var(--radius-sm)',
+                                },
+                            }}
+                        />
+                    </BrowserRouter>
+                </HelmetProvider>
+            </QueryClientProvider>
+        </ErrorBoundary>
+    );
 }

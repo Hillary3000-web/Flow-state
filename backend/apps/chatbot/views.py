@@ -40,7 +40,7 @@ class ChatView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        api_key = getattr(settings, 'GROQ_API_KEY', '') or getattr(settings, 'GEMINI_API_KEY', '')
+        api_key = getattr(settings, 'GROQ_API_KEY', '')
         if not api_key:
             return Response(
                 {'error': 'AI service is not configured. Please set GROQ_API_KEY.'},
@@ -51,8 +51,8 @@ class ChatView(APIView):
             # Build messages array
             messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-            # Add conversation history
-            history = request.data.get('history', [])
+            # Add recent conversation history (cap at 20 messages to limit payload)
+            history = request.data.get('history', [])[-20:]
             for msg in history:
                 role = 'user' if msg.get('role') == 'user' else 'assistant'
                 messages.append({"role": role, "content": msg.get('content', '')})

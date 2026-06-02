@@ -2,7 +2,8 @@ import { create } from 'zustand';
 
 const useUIStore = create((set, get) => ({
   theme: localStorage.getItem('theme') || 'dark',
-  sidebarOpen: true,
+  // Start open only on desktop; tablets and phones start collapsed
+  sidebarOpen: window.innerWidth >= 1024,
   quickCaptureOpen: false,
 
   toggleTheme: () => {

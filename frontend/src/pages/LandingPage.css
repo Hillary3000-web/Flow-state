@@ -28,7 +28,7 @@
 .landing-orb-1 {
   width: 500px;
   height: 500px;
-  background: rgba(124, 58, 237, 0.12);
+  background: rgba(99, 102, 241, 0.12);
   top: -100px;
   right: -150px;
   animation: orb-float 12s ease-in-out infinite;
@@ -91,7 +91,7 @@
 .landing-logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  background: linear-gradient(135deg, #6366f1, #a5b4fc);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -124,18 +124,18 @@
   align-items: center;
   gap: 6px;
   padding: 8px 20px;
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s;
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
 }
 .landing-btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
 }
 
 /* ─── Hero ─── */
@@ -161,10 +161,10 @@
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  background: rgba(124, 58, 237, 0.1);
-  border: 1px solid rgba(124, 58, 237, 0.25);
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: 100px;
-  color: #a78bfa;
+  color: #a5b4fc;
   font-size: 0.85rem;
   font-weight: 500;
   margin-bottom: 28px;
@@ -180,7 +180,7 @@
 }
 
 .landing-title-accent {
-  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 40%, #6d28d9 80%, #5b21b6 100%);
+  background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 40%, #4f46e5 80%, #4338ca 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -207,18 +207,18 @@
   align-items: center;
   gap: 8px;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: #fff;
   font-size: 1.05rem;
   font-weight: 600;
   text-decoration: none;
   border-radius: 12px;
   transition: all 0.3s;
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.35), 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.35), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 .landing-cta-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 50px rgba(124, 58, 237, 0.5), 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 50px rgba(99, 102, 241, 0.5), 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .landing-cta-secondary {
@@ -314,9 +314,9 @@
 }
 .landing-feature-card:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(124, 58, 237, 0.2);
+  border-color: rgba(99, 102, 241, 0.2);
   transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(124, 58, 237, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(99, 102, 241, 0.08);
 }
 
 .landing-feature-icon {
@@ -325,10 +325,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(124, 58, 237, 0.1);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 12px;
-  color: #a78bfa;
+  color: #a5b4fc;
   margin-bottom: 20px;
 }
 
@@ -356,8 +356,8 @@
 .landing-cta-card {
   text-align: center;
   padding: 64px 48px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(59, 130, 246, 0.04));
-  border: 1px solid rgba(124, 58, 237, 0.15);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(59, 130, 246, 0.04));
+  border: 1px solid rgba(99, 102, 241, 0.15);
   border-radius: 24px;
 }
 .landing-cta-card h2 {

@@ -166,14 +166,20 @@ CORS_ALLOWED_ORIGINS = os.getenv(
 CORS_ALLOW_CREDENTIALS = True
 
 # ─── Channels ─────────────────────────────────────────────
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
-        },
+_REDIS_URL = os.getenv('REDIS_URL', '')
+if _REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [_REDIS_URL]},
+        }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        }
+    }
 
 # ─── Celery ────────────────────────────────────────────────
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
@@ -182,6 +188,18 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    'send-overdue-alerts': {
+        'task': 'apps.notifications.tasks.send_overdue_alerts',
+        'schedule': crontab(minute=0),
+    },
+    'send-upcoming-reminders': {
+        'task': 'apps.notifications.tasks.send_upcoming_reminders',
+        'schedule': crontab(minute=30),
+    },
+}
 
 # ─── Email ─────────────────────────────────────────────────
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')

@@ -75,7 +75,7 @@ export default function Register() {
             background: 'var(--bg-primary)', position: 'relative', overflow: 'hidden', padding: '24px',
         }}>
             {!isMobile && (
-                <div style={{ position: 'absolute', top: '-200px', left: '-100px', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '-200px', left: '-100px', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
             )}
 
             <motion.div
@@ -89,8 +89,8 @@ export default function Register() {
                     <div style={{
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                         width: '64px', height: '64px', borderRadius: '18px', marginBottom: '20px',
-                        background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-                        boxShadow: '0 8px 32px rgba(124, 58, 237, 0.35)',
+                        background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                        boxShadow: '0 8px 32px rgba(99, 102, 241, 0.35)',
                     }}>
                         <span style={{ fontSize: '1.6rem', fontWeight: 700, color: 'white' }}>F</span>
                     </div>
@@ -142,12 +142,12 @@ export default function Register() {
                             whileTap={{ scale: 0.98 }}
                             style={{
                                 width: '100%', padding: '13px 24px',
-                                background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                                background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
                                 color: 'white', border: 'none', borderRadius: '10px',
                                 fontSize: '0.9rem', fontWeight: 600, fontFamily: 'inherit',
                                 cursor: isLoading ? 'not-allowed' : 'pointer',
                                 opacity: isLoading ? 0.6 : 1,
-                                boxShadow: '0 2px 12px rgba(109, 40, 217, 0.35)',
+                                boxShadow: '0 2px 12px rgba(79, 70, 229, 0.35)',
                                 transition: 'all 0.2s',
                             }}
                         >

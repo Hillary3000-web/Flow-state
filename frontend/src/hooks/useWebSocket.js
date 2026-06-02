@@ -2,87 +2,83 @@ import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import useAuthStore from '../stores/authStore';
 
-const WS_URL = import.meta.env.VITE_API_URL 
-  ? import.meta.env.VITE_API_URL.replace(/^http/, 'ws')
-  : 'ws://localhost:8000';
+const WS_BASE = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace(/^http/, 'ws')
+    : 'ws://localhost:8000';
+
+const MAX_RECONNECT = 5;
 
 export default function useWebSocket() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const accessToken = localStorage.getItem('access_token');
-  const socketRef = useRef(null);
-  const reconnectAttempts = useRef(0);
-  const MAX_RECONNECT_ATTEMPTS = 5;
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+    const socketRef = useRef(null);
+    const reconnectCount = useRef(0);
+    const reconnectTimer = useRef(null);
+    // Keep a ref in sync so the onclose callback always reads the latest auth state,
+    // avoiding stale closures when the user logs out during a reconnect delay.
+    const isAuthRef = useRef(isAuthenticated);
 
-  useEffect(() => {
-    if (!isAuthenticated || !accessToken) {
-      if (socketRef.current) {
-        socketRef.current.close();
-        socketRef.current = null;
-      }
-      reconnectAttempts.current = 0;
-      return;
-    }
+    useEffect(() => {
+        isAuthRef.current = isAuthenticated;
+    }, [isAuthenticated]);
 
-    const connect = () => {
-      if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
-        console.log('UseWebSocket: Max reconnect attempts reached, stopping');
-        return;
-      }
-
-      // Append token to query string for middleware auth
-      const url = `${WS_URL}/ws/notifications/?token=${accessToken}`;
-      
-      const ws = new WebSocket(url);
-      socketRef.current = ws;
-
-      ws.onopen = () => {
-        console.log('UseWebSocket: Connected');
-        reconnectAttempts.current = 0; // Reset on successful connection
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          // Show toast for new notifications
-          if (data.message) {
-             toast(data.message, {
-               icon: '🔔',
-               style: {
-                 background: '#18181b',
-                 color: '#fff',
-                 border: '1px solid #27272a',
-               },
-             });
-          }
-        } catch (err) {
-          console.error('UseWebSocket: Error parsing message', err);
+    useEffect(() => {
+        if (!isAuthenticated) {
+            socketRef.current?.close();
+            socketRef.current = null;
+            clearTimeout(reconnectTimer.current);
+            reconnectCount.current = 0;
+            return;
         }
-      };
 
-      ws.onclose = () => {
-        console.log('UseWebSocket: Disconnected');
-        reconnectAttempts.current += 1;
-        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
-        const delay = Math.min(2000 * Math.pow(2, reconnectAttempts.current - 1), 32000);
-        setTimeout(() => {
-          if (isAuthenticated && reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) connect();
-        }, delay);
-      };
+        const connect = () => {
+            if (reconnectCount.current >= MAX_RECONNECT) return;
 
-      ws.onerror = (error) => {
-        console.error('UseWebSocket: Error', error);
-        ws.close();
-      };
-    };
+            // Token is read fresh inside the effect so it picks up refreshed tokens
+            const token = localStorage.getItem('access_token');
+            if (!token || !isAuthRef.current) return;
 
-    connect();
+            const ws = new WebSocket(`${WS_BASE}/ws/notifications/?token=${token}`);
+            socketRef.current = ws;
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-    };
-  }, [isAuthenticated, accessToken]);
+            ws.onopen = () => {
+                reconnectCount.current = 0;
+            };
 
-  return socketRef.current;
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.message) {
+                        toast(data.message, {
+                            icon: '🔔',
+                            style: {
+                                background: 'var(--bg-card)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--border-strong)',
+                            },
+                        });
+                    }
+                } catch (err) {
+                    console.error('WebSocket: failed to parse message', err);
+                }
+            };
+
+            ws.onclose = () => {
+                if (!isAuthRef.current) return; // Logged out — do not reconnect
+                reconnectCount.current += 1;
+                if (reconnectCount.current >= MAX_RECONNECT) return;
+                const delay = Math.min(2000 * Math.pow(2, reconnectCount.current - 1), 32000);
+                reconnectTimer.current = setTimeout(connect, delay);
+            };
+
+            ws.onerror = () => ws.close();
+        };
+
+        connect();
+
+        return () => {
+            clearTimeout(reconnectTimer.current);
+            socketRef.current?.close();
+            socketRef.current = null;
+        };
+    }, [isAuthenticated]);
 }

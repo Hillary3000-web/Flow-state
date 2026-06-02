@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HiOutlineLightningBolt, HiOutlineX } from 'react-icons/hi';
 import { tasksAPI } from '../../api';
 import useUIStore from '../../stores/uiStore';
+import useResponsive from '../../hooks/useResponsive';
 import toast from 'react-hot-toast';
 
-const P_COLORS = { P1: { bg: 'rgba(239,68,68,0.1)', c: '#ef4444' }, P2: { bg: 'rgba(234,179,8,0.1)', c: '#eab308' }, P3: { bg: 'rgba(124,58,237,0.1)', c: '#8b5cf6' }, P4: { bg: 'rgba(113,113,122,0.1)', c: '#71717a' } };
+const P_COLORS = { P1: { bg: 'rgba(239,68,68,0.1)', c: '#ef4444' }, P2: { bg: 'rgba(234,179,8,0.1)', c: '#eab308' }, P3: { bg: 'rgba(99,102,241,0.1)', c: '#818cf8' }, P4: { bg: 'rgba(113,113,122,0.1)', c: '#71717a' } };
 
 export default function QuickCapture() {
     const { quickCaptureOpen, closeQuickCapture } = useUIStore();
+    const { isMobile } = useResponsive();
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState('P3');
     const [loading, setLoading] = useState(false);
@@ -56,16 +58,31 @@ export default function QuickCapture() {
                         style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
                     />
                     <motion.div
-                        initial={{ opacity: 0, y: -16, scale: 0.96 }}
+                        initial={{ opacity: 0, y: -12, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -16, scale: 0.96 }}
-                        transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-                        style={{ position: 'fixed', top: '18%', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '520px', zIndex: 51, padding: '0 16px' }}
+                        exit={{ opacity: 0, y: -12, scale: 0.97 }}
+                        transition={{ type: 'spring', damping: 28, stiffness: 380 }}
+                        style={{
+                            position: 'fixed',
+                            // On mobile: sit just below the header so the keyboard doesn't cover it.
+                            // On desktop: centre vertically at 18% of the viewport.
+                            top: isMobile ? '72px' : '18%',
+                            // Centre horizontally without CSS transform (transform conflicts with
+                            // framer-motion's own transform matrix and breaks positioning).
+                            left: isMobile ? '12px' : '50%',
+                            right: isMobile ? '12px' : 'auto',
+                            // Desktop: shift back by half the max-width so it looks centred.
+                            // framer-motion does not animate marginLeft, so this is safe.
+                            marginLeft: isMobile ? 0 : '-260px',
+                            width: isMobile ? 'auto' : '100%',
+                            maxWidth: '520px',
+                            zIndex: 51,
+                        }}
                     >
                         <div style={{
                             borderRadius: '18px', overflow: 'hidden',
                             background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
-                            boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(124,58,237,0.1)',
+                            boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(99,102,241,0.1)',
                         }}>
                             <form onSubmit={handleSubmit}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 20px' }}>

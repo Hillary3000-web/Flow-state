@@ -82,3 +82,7 @@ export const notificationsAPI = {
   markRead: (id) => client.patch(`/notifications/${id}/read/`),
   markAllRead: () => client.post('/notifications/read-all/'),
 };
+
+export const chatbotAPI = {
+  send: (message, history = []) => client.post('/chatbot/', { message, history }),
+};

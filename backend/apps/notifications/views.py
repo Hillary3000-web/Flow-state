@@ -12,6 +12,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     """CRUD for notifications."""
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
 
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
