@@ -39,7 +39,10 @@ export default function Tasks() {
     const load = useCallback(() => {
         setIsLoading(true);
         tasksAPI.list(filter !== 'all' ? { status: filter } : {})
-            .then(r => setTasks(r.data.results || r.data))
+            .then(r => {
+                const list = Array.isArray(r.data?.data) ? r.data.data : (r.data?.results || (Array.isArray(r.data) ? r.data : []));
+                setTasks(list);
+            })
             .catch(() => toast.error('Failed to load tasks'))
             .finally(() => setIsLoading(false));
     }, [filter]);

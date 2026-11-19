@@ -28,7 +28,10 @@ export default function Projects() {
     const load = useCallback(() => {
         setIsLoading(true);
         projectsAPI.list()
-            .then(r => setProjects(r.data.results || r.data))
+            .then(r => {
+                const list = Array.isArray(r.data?.data) ? r.data.data : (r.data?.results || (Array.isArray(r.data) ? r.data : []));
+                setProjects(list);
+            })
             .catch(() => toast.error('Failed to load projects'))
             .finally(() => setIsLoading(false));
     }, []);

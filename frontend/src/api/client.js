@@ -1,17 +1,26 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://flow-state-api.onrender.com';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const normalizedBase = API_BASE.endsWith('/api/v1')
+    ? API_BASE
+    : API_BASE.endsWith('/api')
+        ? `${API_BASE}/v1`
+        : `${API_BASE}/api/v1`;
 
 const client = axios.create({
-    baseURL: `${API_BASE}/api`,
+    baseURL: normalizedBase,
     headers: { 'Content-Type': 'application/json' },
 });
 
 client.interceptors.request.use((config) => {
+    if (config.url && config.url.length > 1 && config.url.endsWith('/')) {
+        config.url = config.url.replace(/\/+$/, '');
+    }
     const token = localStorage.getItem('access_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
 });
+
 
 client.interceptors.response.use(
     (response) => response,
@@ -23,10 +32,16 @@ client.interceptors.response.use(
             try {
                 const refresh = localStorage.getItem('refresh_token');
                 if (refresh) {
-                    const { data } = await axios.post(`${API_BASE}/api/auth/refresh/`, { refresh });
-                    localStorage.setItem('access_token', data.access);
-                    originalRequest.headers.Authorization = `Bearer ${data.access}`;
-                    return client(originalRequest);
+                    // Go backend: POST /api/v1/auth/refresh with { refresh_token } or { refresh }
+                    const { data } = await axios.post(`${normalizedBase}/auth/refresh`, { refresh_token: refresh, refresh });
+                    const goData = data?.data || data;
+                    const tokens = goData?.tokens || goData;
+                    const newAccess = tokens?.access_token || tokens?.access || '';
+                    if (newAccess) {
+                        localStorage.setItem('access_token', newAccess);
+                        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+                        return client(originalRequest);
+                    }
                 }
             } catch {
                 localStorage.removeItem('access_token');

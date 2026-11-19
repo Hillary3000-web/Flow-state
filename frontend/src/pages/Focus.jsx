@@ -38,7 +38,7 @@ export default function Focus() {
     distractionsRef.current = distractions;
 
     useEffect(() => {
-        focusAPI.stats().then(r => setStats(r.data)).catch(() => { });
+        focusAPI.stats().then(r => setStats(r.data?.data || r.data)).catch(() => { });
     }, []);
 
     const btnPrimary = {

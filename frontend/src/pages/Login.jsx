@@ -32,7 +32,15 @@ export default function Login() {
         if (result.success) {
             navigate('/dashboard', { replace: true });
         } else {
-            setError(result.error?.detail || 'Invalid email or password');
+            // Go backend returns { success: false, error: "..." }
+            // Fallback chain handles both Go and any other formats
+            const errData = result.error;
+            setError(
+                errData?.error ||
+                errData?.data?.error ||
+                errData?.detail ||
+                'Invalid email or password'
+            );
         }
     };
 

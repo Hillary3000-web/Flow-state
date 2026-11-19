@@ -54,7 +54,10 @@ export default function Schedule() {
     const load = useCallback(() => {
         setIsLoading(true);
         scheduleAPI.listBlocks({ block_date: date })
-            .then(r => setBlocks(r.data.results || r.data))
+            .then(r => {
+                const list = Array.isArray(r.data?.data) ? r.data.data : (r.data?.results || (Array.isArray(r.data) ? r.data : []));
+                setBlocks(list);
+            })
             .catch(() => toast.error('Failed to load schedule'))
             .finally(() => setIsLoading(false));
     }, [date]);

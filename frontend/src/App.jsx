@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import useAuthStore from './stores/authStore';
 import ErrorBoundary from './components/ErrorBoundary';
 import MainLayout from './components/layout/MainLayout';
+import TactileLayout from './components/layout/TactileLayout';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -13,6 +14,7 @@ import Tasks from './pages/Tasks';
 import Goals from './pages/Goals';
 import Projects from './pages/Projects';
 import Habits from './pages/Habits';
+import HabitDashboard from './pages/HabitDashboard';
 import Schedule from './pages/Schedule';
 import Focus from './pages/Focus';
 import Analytics from './pages/Analytics';
@@ -55,12 +57,12 @@ export default function App() {
                             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
                             {/* Protected routes */}
-                            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                            <Route element={<ProtectedRoute><TactileLayout /></ProtectedRoute>}>
                                 <Route path="/dashboard" element={<Dashboard />} />
                                 <Route path="/tasks" element={<Tasks />} />
                                 <Route path="/goals" element={<Goals />} />
                                 <Route path="/projects" element={<Projects />} />
-                                <Route path="/habits" element={<Habits />} />
+                                <Route path="/habits" element={<HabitDashboard />} />
                                 <Route path="/schedule" element={<Schedule />} />
                                 <Route path="/focus" element={<Focus />} />
                                 <Route path="/analytics" element={<Analytics />} />

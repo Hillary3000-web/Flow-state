@@ -158,7 +158,8 @@ export default function AIChatbot() {
         try {
             const history = updatedMessages.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
             const { data } = await client.post('/chatbot/', { message: userMessage, history });
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+            const reply = data?.data?.reply ?? data?.reply ?? 'No response received.';
+            setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
         } catch (err) {
             const errorMsg = err.response?.data?.error || 'Something went wrong. Please try again.';
             setMessages(prev => [...prev, { role: 'error', content: errorMsg }]);

@@ -1,0 +1,9 @@
+bin/
+*.exe
+*.test
+*.out
+.env
+tmp/
+pgsql/
+start-db.ps1
+stop-db.ps1

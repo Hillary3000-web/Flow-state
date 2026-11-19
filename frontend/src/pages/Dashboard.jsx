@@ -43,9 +43,9 @@ export default function Dashboard() {
 
     useEffect(() => {
         Promise.all([
-            analyticsAPI.overview().then(r => setStats(r.data)).catch(() => { }),
-            analyticsAPI.trends({ days: 14 }).then(r => setTrends(r.data)).catch(() => { }),
-            scheduleAPI.risks().then(r => setRisks(r.data)).catch(() => { }),
+            analyticsAPI.overview().then(r => setStats(r.data?.data || r.data)).catch(() => { }),
+            analyticsAPI.trends({ days: 14 }).then(r => setTrends(Array.isArray(r.data?.data) ? r.data.data : (Array.isArray(r.data) ? r.data : []))).catch(() => { }),
+            scheduleAPI.risks().then(r => setRisks(r.data?.data || r.data || { overdue: [], at_risk: [] })).catch(() => { }),
         ]).finally(() => setIsLoading(false));
     }, []);
 

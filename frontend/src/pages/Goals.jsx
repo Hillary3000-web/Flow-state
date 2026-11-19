@@ -23,7 +23,10 @@ export default function Goals() {
     const load = useCallback(() => {
         setIsLoading(true);
         goalsAPI.list()
-            .then(r => setGoals(r.data.results || r.data))
+            .then(r => {
+                const list = Array.isArray(r.data?.data) ? r.data.data : (r.data?.results || (Array.isArray(r.data) ? r.data : []));
+                setGoals(list);
+            })
             .catch(() => toast.error('Failed to load goals'))
             .finally(() => setIsLoading(false));
     }, []);

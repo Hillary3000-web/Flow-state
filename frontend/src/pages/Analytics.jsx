@@ -22,10 +22,10 @@ export default function Analytics() {
 
     useEffect(() => {
         Promise.all([
-            analyticsAPI.overview().then(r => setOverview(r.data)).catch(() => { }),
-            analyticsAPI.trends({ days: 30 }).then(r => setTrends(r.data)).catch(() => { }),
-            analyticsAPI.burndown({ days: 30 }).then(r => setBurndown(r.data)).catch(() => { }),
-            analyticsAPI.timeAllocation().then(r => setAllocation(r.data)).catch(() => { }),
+            analyticsAPI.overview().then(r => setOverview(r.data?.data || r.data)).catch(() => { }),
+            analyticsAPI.trends({ days: 30 }).then(r => setTrends(Array.isArray(r.data?.data) ? r.data.data : (Array.isArray(r.data) ? r.data : []))).catch(() => { }),
+            analyticsAPI.burndown({ days: 30 }).then(r => setBurndown(Array.isArray(r.data?.data) ? r.data.data : (Array.isArray(r.data) ? r.data : []))).catch(() => { }),
+            analyticsAPI.timeAllocation().then(r => setAllocation(r.data?.data || r.data || { by_energy: [], by_priority: [] })).catch(() => { }),
         ]).finally(() => setIsLoading(false));
     }, []);
 

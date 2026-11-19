@@ -54,7 +54,17 @@ export default function Register() {
         if (result.success) {
             navigate('/dashboard', { replace: true });
         } else {
-            setError(result.error ? Object.values(result.error).flat().join(', ') : 'Registration failed');
+            // Go backend returns { success: false, error: "..." } as a string
+            const errData = result.error;
+            const msg = errData?.error || errData?.data?.error || errData?.detail;
+            if (msg) {
+                setError(msg);
+            } else if (errData && typeof errData === 'object') {
+                // Fallback for object-style error responses
+                setError(Object.values(errData).flat().join(', ') || 'Registration failed');
+            } else {
+                setError('Registration failed');
+            }
         }
     };
 
