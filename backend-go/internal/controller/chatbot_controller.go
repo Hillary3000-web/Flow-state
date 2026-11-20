@@ -11,17 +11,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ChatbotController handles AI chatbot requests via Google Gemini API.
+// ChatbotController handles AI chatbot requests via Groq API (OpenAI-compatible).
 type ChatbotController struct {
-	geminiAPIKey string
+	groqAPIKey string
 }
 
 // NewChatbotController constructs a ChatbotController.
 func NewChatbotController() *ChatbotController {
 	return &ChatbotController{
-		geminiAPIKey: os.Getenv("GEMINI_API_KEY"),
+		groqAPIKey: os.Getenv("GROQ_API_KEY"),
 	}
 }
+
+// ---- incoming request types ----
 
 type chatMessage struct {
 	Role    string `json:"role"`
@@ -33,29 +35,21 @@ type chatRequest struct {
 	History []chatMessage `json:"history"`
 }
 
-type geminiPart struct {
-	Text string `json:"text"`
+// ---- Groq / OpenAI-compatible request & response types ----
+
+type groqRequest struct {
+	Model       string        `json:"model"`
+	Messages    []chatMessage `json:"messages"`
+	Temperature float64       `json:"temperature"`
+	MaxTokens   int           `json:"max_tokens"`
 }
 
-type geminiContent struct {
-	Role  string       `json:"role"`
-	Parts []geminiPart `json:"parts"`
-}
-
-type geminiRequest struct {
-	SystemInstruction *geminiContent  `json:"system_instruction,omitempty"`
-	Contents          []geminiContent `json:"contents"`
-	GenerationConfig  map[string]any  `json:"generationConfig,omitempty"`
-}
-
-type geminiResponse struct {
-	Candidates []struct {
-		Content struct {
-			Parts []struct {
-				Text string `json:"text"`
-			} `json:"parts"`
-		} `json:"content"`
-	} `json:"candidates"`
+type groqResponse struct {
+	Choices []struct {
+		Message struct {
+			Content string `json:"content"`
+		} `json:"message"`
+	} `json:"choices"`
 }
 
 const systemPrompt = `You are FlowState AI, a productivity assistant embedded in the FlowState app — a deep work, habit tracking, and goal execution platform.
@@ -71,8 +65,10 @@ Guidelines:
 - Do not make up specific statistics unless they are widely established
 `
 
-// Chat godoc
-// POST /api/v1/chatbot
+const groqEndpoint = "https://api.groq.com/openai/v1/chat/completions"
+const groqModel = "llama-3.3-70b-versatile"
+
+// Chat handles POST /api/v1/chatbot
 func (ctrl *ChatbotController) Chat(c *gin.Context) {
 	var req chatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -80,8 +76,8 @@ func (ctrl *ChatbotController) Chat(c *gin.Context) {
 		return
 	}
 
-	// If no Gemini API key — return a helpful static fallback
-	if ctrl.geminiAPIKey == "" {
+	// No API key — return smart static fallback
+	if ctrl.groqAPIKey == "" {
 		reply := generateFallbackReply(req.Message)
 		c.JSON(http.StatusOK, Response{
 			Success: true,
@@ -90,45 +86,40 @@ func (ctrl *ChatbotController) Chat(c *gin.Context) {
 		return
 	}
 
-	// Build Gemini conversation contents from history
-	contents := make([]geminiContent, 0, len(req.History)+1)
+	// Build messages: system prompt + history + current message
+	messages := []chatMessage{
+		{Role: "system", Content: systemPrompt},
+	}
 	for _, msg := range req.History {
-		role := msg.Role
-		if role == "assistant" {
-			role = "model"
-		} else if role != "user" {
-			continue
+		if msg.Role == "user" || msg.Role == "assistant" {
+			messages = append(messages, msg)
 		}
-		contents = append(contents, geminiContent{
-			Role:  role,
-			Parts: []geminiPart{{Text: msg.Content}},
-		})
 	}
-	// Add the current user message
-	contents = append(contents, geminiContent{
-		Role:  "user",
-		Parts: []geminiPart{{Text: req.Message}},
-	})
+	messages = append(messages, chatMessage{Role: "user", Content: req.Message})
 
-	gemReq := geminiRequest{
-		SystemInstruction: &geminiContent{
-			Parts: []geminiPart{{Text: systemPrompt}},
-		},
-		Contents: contents,
-		GenerationConfig: map[string]any{
-			"temperature":     0.7,
-			"maxOutputTokens": 1024,
-		},
+	payload := groqRequest{
+		Model:       groqModel,
+		Messages:    messages,
+		Temperature: 0.7,
+		MaxTokens:   1024,
 	}
 
-	body, err := json.Marshal(gemReq)
+	body, err := json.Marshal(payload)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, Response{Success: false, Error: "chatbot service error"})
 		return
 	}
 
-	url := "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + ctrl.geminiAPIKey
-	resp, err := http.Post(url, "application/json", bytes.NewReader(body)) //nolint:gosec
+	httpReq, err := http.NewRequestWithContext(c.Request.Context(), http.MethodPost, groqEndpoint, bytes.NewReader(body))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Response{Success: false, Error: "chatbot service error"})
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+ctrl.groqAPIKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		c.JSON(http.StatusServiceUnavailable, Response{Success: false, Error: "AI service unavailable"})
 		return
@@ -149,16 +140,13 @@ func (ctrl *ChatbotController) Chat(c *gin.Context) {
 		return
 	}
 
-	var gemResp geminiResponse
-	if err := json.Unmarshal(respBody, &gemResp); err != nil || len(gemResp.Candidates) == 0 {
+	var groqResp groqResponse
+	if err := json.Unmarshal(respBody, &groqResp); err != nil || len(groqResp.Choices) == 0 {
 		c.JSON(http.StatusInternalServerError, Response{Success: false, Error: "chatbot service error"})
 		return
 	}
 
-	reply := ""
-	if len(gemResp.Candidates[0].Content.Parts) > 0 {
-		reply = gemResp.Candidates[0].Content.Parts[0].Text
-	}
+	reply := groqResp.Choices[0].Message.Content
 
 	c.JSON(http.StatusOK, Response{
 		Success: true,
@@ -166,7 +154,7 @@ func (ctrl *ChatbotController) Chat(c *gin.Context) {
 	})
 }
 
-// generateFallbackReply returns a canned reply when no Gemini key is configured.
+// generateFallbackReply returns a canned reply when no GROQ_API_KEY is configured.
 func generateFallbackReply(message string) string {
 	msg := strings.ToLower(message)
 	switch {
@@ -176,11 +164,9 @@ func generateFallbackReply(message string) string {
 		return "**Habit Architecture Principles:**\n\n- **Identity first**: Decide who you want to be, then act accordingly\n- **Habit stacking**: Attach new habits to existing anchors\n- **2-minute rule**: Start with a version so small it's laughable\n- **Track your streaks** in FlowState — consistency compounds\n\nAim for 80% consistency rather than 100% perfection."
 	case strings.Contains(msg, "priorit") || strings.Contains(msg, "task"):
 		return "**Task Prioritization Framework:**\n\n1. **P1 (Urgent + Important)**: Do first — these are crises\n2. **P2 (Not Urgent + Important)**: Schedule — this is where growth happens\n3. **P3 (Urgent + Not Important)**: Delegate if possible\n4. **P4**: Eliminate\n\nIn FlowState, use the priority field to tag tasks. Review your P2 tasks every morning."
-	case strings.Contains(msg, "morning") || strings.Contains(msg, "routine"):
+	case strings.Contains(msg, "morning"):
 		return "**Optimized Morning Stack:**\n\n- **0-30 min**: Sunlight exposure + movement (sets circadian rhythm)\n- **30-60 min**: No phone/email — protect your best cognitive window\n- **60-90 min**: Tackle your most important single task\n- **90+ min**: Check communications and plan the rest of the day\n\nLog your morning energy level in FlowState's daily checkin to track what works."
 	default:
-		return "**FlowState AI is ready to help!**\n\nI can assist with:\n- **Productivity systems** — deep work, time blocking, task prioritization\n- **Habit formation** — building routines that stick\n- **Goal achievement** — breaking big goals into executable projects\n- **Focus optimization** — managing energy and attention\n\nTry asking: *\"How do I prioritize my tasks?\"* or *\"Tips for building a morning routine\"*\n\n> **Note**: Set your `GEMINI_API_KEY` environment variable in `.env` to unlock full AI responses."
+		return "**FlowState AI is ready to help!**\n\nI can assist with:\n- **Productivity systems** — deep work, time blocking, task prioritization\n- **Habit formation** — building routines that stick\n- **Goal achievement** — breaking big goals into executable projects\n- **Focus optimization** — managing energy and attention\n\nTry asking: *\"How do I prioritize my tasks?\"* or *\"Tips for building a morning routine\"*\n\n> **Note**: Set your `GROQ_API_KEY` environment variable to unlock full AI responses."
 	}
 }
-
-
