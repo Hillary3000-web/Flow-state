@@ -35,6 +35,7 @@ func (u *focusUsecase) CreateSession(ctx context.Context, userID uuid.UUID, task
 		targetMinutes = 25
 	}
 	session := &domain.FocusSession{
+		ID:            uuid.New(),
 		UserID:        userID,
 		TaskID:        taskID,
 		StartedAt:     time.Now().UTC(),
@@ -128,4 +129,3 @@ func calculateDateStreak(dates []time.Time) int {
 	}
 	return streak
 }
-
