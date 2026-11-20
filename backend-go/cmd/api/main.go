@@ -17,6 +17,7 @@ import (
 	"github.com/flowstate/backend/internal/repository/db"
 	"github.com/flowstate/backend/internal/usecase"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -40,8 +41,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to parse database configuration: %v", err)
 	}
-	poolConfig.MaxConns = 25
-	poolConfig.MinConns = 5
+	// Disable prepared statement caching for Supabase's PgBouncer transaction pooler
+	poolConfig.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+	poolConfig.MaxConns = 15
+	poolConfig.MinConns = 2
 	poolConfig.MaxConnLifetime = 1 * time.Hour
 	poolConfig.MaxConnIdleTime = 30 * time.Minute
 
