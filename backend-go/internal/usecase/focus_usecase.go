@@ -34,14 +34,16 @@ func (u *focusUsecase) CreateSession(ctx context.Context, userID uuid.UUID, task
 	if targetMinutes <= 0 {
 		targetMinutes = 25
 	}
+	now := time.Now().UTC()
 	session := &domain.FocusSession{
 		ID:            uuid.New(),
 		UserID:        userID,
 		TaskID:        taskID,
-		StartedAt:     time.Now().UTC(),
+		StartedAt:     now,
 		SessionType:   sessionType,
 		TargetMinutes: targetMinutes,
 		IsCompleted:   false,
+		CreatedAt:     now,
 	}
 	if err := u.focusRepo.Create(ctx, session); err != nil {
 		return nil, err
