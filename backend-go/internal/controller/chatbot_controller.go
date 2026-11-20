@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -70,6 +71,7 @@ const groqModel = "llama-3.3-70b-versatile"
 
 // Chat handles POST /api/v1/chatbot
 func (ctrl *ChatbotController) Chat(c *gin.Context) {
+	ctrl.groqAPIKey = os.Getenv("GROQ_API_KEY")
 	var req chatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, Response{Success: false, Error: "message is required"})
@@ -133,6 +135,7 @@ func (ctrl *ChatbotController) Chat(c *gin.Context) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("[GROQ ERROR] status=%d body=%s", resp.StatusCode, string(respBody))
 		c.JSON(http.StatusBadGateway, Response{
 			Success: false,
 			Error:   "AI service temporarily unavailable",
