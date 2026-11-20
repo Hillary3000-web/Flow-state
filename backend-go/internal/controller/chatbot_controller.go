@@ -67,7 +67,7 @@ Guidelines:
 `
 
 const groqEndpoint = "https://api.groq.com/openai/v1/chat/completions"
-const groqModel = "llama-3.3-70b-versatile"
+const groqModel = "llama-3.1-8b-instant"
 
 // Chat handles POST /api/v1/chatbot
 func (ctrl *ChatbotController) Chat(c *gin.Context) {
